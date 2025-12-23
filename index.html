@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <title>Krell 3</title>
+    <link rel="stylesheet" href="./style.css">
+
+  </head>
+    
+  <body>
+  <div id="app" class="wrap">
+  <header class="topbar">
+    <h1>Krell Patch Machine</h1>
+    <div class="transport">
+      <button id="startBtn" class="primary">Start</button>
+      <button id="stopBtn">Stop</button>
+      <button id="reseedBtn" title="New random seed / state">Reseed</button>
+      <span class="status-dot" id="statusDot" title="engine status"></span>
+    </div>
+  </header>
+
+  <section class="panel">
+    <h2>Engine</h2>
+    <div class="grid">
+      <!-- Core controls -->
+      <label class="ctrl"><span>Master Volume</span>
+        <input type="range" id="masterGain" min="0" max="1" step="0.001" value="0.35">
+        <output for="masterGain">0.35</output>
+      </label>
+
+      <label class="ctrl"><span>Event Rate (Hz)</span>
+        <input type="range" id="eventHz" min="0.05" max="4" step="0.01" value="0.60">
+        <output for="eventHz">0.60</output>
+      </label>
+
+      <label class="ctrl"><span>Randomness</span>
+        <input type="range" id="randomness" min="0" max="1" step="0.01" value="0.60">
+        <output for="randomness">0.60</output>
+      </label>
+
+      <label class="ctrl"><span>Glide Time (ms)</span>
+        <input type="range" id="glideMs" min="0" max="2000" step="1" value="250">
+        <output for="glideMs">250</output>
+      </label>
+
+      <label class="ctrl"><span>Env Attack (ms)</span>
+        <input type="range" id="attackMs" min="1" max="3000" step="1" value="400">
+        <output for="attackMs">400</output>
+      </label>
+
+      <label class="ctrl"><span>Pulse Width (ms)</span>
+        <input type="range" id="pulseWidth" min="10" max="4000" step="10" value="600">
+        <output for="pulseWidth">600</output>
+      </label>
+
+      <label class="ctrl"><span>Env Release (ms)</span>
+        <input type="range" id="releaseMs" min="50" max="6000" step="1" value="1600">
+        <output for="releaseMs">1600</output>
+      </label>
+
+      <label class="ctrl"><span>Pitch Min (MIDI)</span>
+        <input type="range" id="pitchMin" min="36" max="84" step="1" value="45">
+        <output for="pitchMin">45</output>
+      </label>
+
+      <label class="ctrl"><span>Pitch Max (MIDI)</span>
+        <input type="range" id="pitchMax" min="36" max="96" step="1" value="65">
+        <output for="pitchMax">65</output>
+      </label>
+
+      <label class="ctrl"><span>LFO Rate (Hz)</span>
+        <input type="range" id="lfoRate" min="0.01" max="10" step="0.01" value="0.35">
+        <output for="lfoRate">0.35</output>
+      </label>
+
+      <label class="ctrl"><span>LFO Depth (cents)</span>
+        <input type="range" id="lfoDepth" min="0" max="1200" step="1" value="80">
+        <output for="lfoDepth">80</output>
+      </label>
+
+      <label class="ctrl"><span>Filter Cutoff (Hz)</span>
+        <input type="range" id="cutoffHz" min="60" max="12000" step="1" value="1200">
+        <output for="cutoffHz">1200</output>
+      </label>
+
+      <label class="ctrl"><span>Filter Q</span>
+        <input type="range" id="filterQ" min="0.1" max="24" step="0.1" value="0.3">
+        <output for="filterQ">0.3</output>
+      </label>
+
+      <label class="ctrl"><span>Env→Filter Amount</span>
+        <input type="range" id="envToFilter" min="0" max="1" step="0.01" value="0.5">
+        <output for="envToFilter">0.50</output>
+      </label>
+
+      <label class="ctrl"><span>Delay Time (s)</span>
+        <input type="range" id="delayTime" min="0" max="1.2" step="0.001" value="0.35">
+        <output for="delayTime">0.35</output>
+      </label>
+
+      <label class="ctrl"><span>Delay Feedback</span>
+        <input type="range" id="delayFb" min="0" max="0.95" step="0.001" value="0.35">
+        <output for="delayFb">0.35</output>
+      </label>
+
+      <label class="ctrl"><span>Delay Mix</span>
+        <input type="range" id="delayMix" min="0" max="1" step="0.001" value="0.30">
+        <output for="delayMix">0.30</output>
+      </label>
+
+      <label class="ctrl"><span>Voice Blend (Sine↔Triangle)</span>
+        <input type="range" id="blend" min="0" max="1" step="0.01" value="0.40">
+        <output for="blend">0.40</output>
+      </label>
+
+      <label class="ctrl"><span>Scale</span>
+        <select id="scaleSel">
+          <option value="pent_minor" selected>Pentatonic (minor)</option>
+          <option value="pent_major">Pentatonic (major)</option>
+          <option value="aeolian">Aeolian</option>
+          <option value="dorian">Dorian</option>
+          <option value="chromatic">Chromatic</option>
+          <option value="whole">Whole Tone</option>
+        </select>
+      </label>
+
+      <!-- Alien ext -->
+      <label class="ctrl"><span>Noise Mix (→ LP)</span>
+        <input type="range" id="noiseMix" min="0" max="1" step="0.001" value="0.08">
+        <output for="noiseMix">0.08</output>
+      </label>
+
+      <label class="ctrl"><span>Noise Band Mix (→ BP)</span>
+        <input type="range" id="noiseBandMix" min="0" max="1" step="0.001" value="0.25">
+        <output for="noiseBandMix">0.25</output>
+      </label>
+
+      <label class="ctrl"><span>Noise Band Center (Hz)</span>
+        <input type="range" id="noiseBandHz" min="100" max="8000" step="1" value="1800">
+        <output for="noiseBandHz">1800</output>
+      </label>
+
+      <label class="ctrl"><span>Noise Band Q</span>
+        <input type="range" id="noiseBandQ" min="0.1" max="20" step="0.1" value="3">
+        <output for="noiseBandQ">3</output>
+      </label>
+
+      <label class="ctrl"><span>Alien Warp (Drive/Mix)</span>
+        <input type="range" id="alienWarp" min="0" max="1" step="0.001" value="0.10">
+        <output for="alienWarp">0.10</output>
+      </label>
+
+      <label class="ctrl"><span>Chaos Rate (Hz)</span>
+        <input type="range" id="chaosRate" min="0.05" max="8" step="0.01" value="0.25">
+        <output for="chaosRate">0.25</output>
+      </label>
+
+      <label class="ctrl"><span>Chaos Depth</span>
+        <input type="range" id="chaosDepth" min="0" max="1" step="0.001" value="0.50">
+        <output for="chaosDepth">0.50</output>
+      </label>
+
+      <label class="ctrl"><span>Space Mix (Reverb)</span>
+        <input type="range" id="spaceMix" min="0" max="1" step="0.001" value="0.25">
+        <output for="spaceMix">0.25</output>
+      </label>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Scope</h2>
+    <canvas id="scope" width="900" height="160"></canvas>
+  </section>
+
+  <footer class="botbar">
+    <p>Polish: gentle random panning per pulse + reverb ducking for clearer throb. Baseline features intact.</p>
+  </footer>
+</div>
+    <script  src="./script.js"></script>
+
+  </body>
+  
+</html>

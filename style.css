@@ -1,0 +1,229 @@
+/* === Import Retro Sci-Fi Fonts === */
+@import url('https://fonts.googleapis.com/css2?family=Audiowide&family=Press+Start+2P&family=Share+Tech+Mono&display=swap');
+
+:root {
+  --bg: #050010;
+  --panel: #101020;
+  --panel2: #0a0a18;
+  --ink: #f2faff;
+  --muted: #a3a3d9;
+  --accent: #00ffcc;   /* neon aqua */
+  --accent2: #ff3cf0;  /* hot magenta */
+  --glow: rgba(0, 255, 204, 0.6);
+}
+
+* { box-sizing: border-box; }
+html, body {
+  height: 100%;
+  margin: 0;
+  background: radial-gradient(ellipse at top, #1a0033 0%, #050010 80%);
+  color: var(--ink);
+  font-family: 'Audiowide', 'Share Tech Mono', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  letter-spacing: 0.5px;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* VHS scanlines overlay */
+body::before {
+  content: "";
+  position: fixed;
+  top:0;left:0;right:0;bottom:0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255,255,255,0.04) 0px,
+    rgba(255,255,255,0.04) 1px,
+    transparent 2px,
+    transparent 3px
+  );
+  mix-blend-mode: overlay;
+  z-index: 1;
+}
+
+.wrap {
+  max-width: 1080px;
+  margin: 24px auto;
+  padding: 0 16px;
+  position: relative;
+  z-index: 2;
+}
+
+/* Headings */
+h1 {
+  margin: 0;
+  font-family: 'Press Start 2P', 'Audiowide', sans-serif;
+  font-weight: normal;
+  font-size: 40px;
+  color: var(--accent);
+  text-shadow: 0 0 10px var(--accent),
+               0 0 20px var(--accent2),
+               0 0 40px var(--accent);
+}
+h2 {
+  margin: 0 0 10px 0;
+  font-family: 'Share Tech Mono', 'Audiowide', sans-serif;
+  font-weight: normal;
+  color: var(--accent2);
+  text-shadow: 0 0 6px var(--accent2), 0 0 12px var(--accent);
+}
+
+.topbar, .botbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+/* Buttons */
+button {
+  background: linear-gradient(180deg, #1e0030, #12001f);
+  color: var(--ink);
+  border: 1px solid var(--accent2);
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.2s;
+  text-transform: uppercase;
+  font-family: 'Share Tech Mono', monospace;
+  font-weight: bold;
+  box-shadow: 0 0 8px var(--accent2), inset 0 0 10px #000;
+}
+button:hover {
+  background: linear-gradient(180deg, #2c0050, #180030);
+  box-shadow: 0 0 12px var(--accent), 0 0 24px var(--accent2);
+}
+button.primary {
+  background: linear-gradient(180deg, var(--accent2), #9a00a8);
+  border: none;
+  box-shadow: 0 0 15px var(--accent2), inset 0 0 8px #000;
+}
+button.primary:hover {
+  filter: brightness(1.15);
+}
+
+.status-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+  background: #333;
+  border: 1px solid #666;
+  box-shadow: 0 0 6px #000 inset;
+}
+.status-dot.on {
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent), 0 0 25px var(--accent2);
+}
+
+/* Panels */
+.panel {
+  background: linear-gradient(180deg, #0f0015, #050010);
+  border: 1px solid var(--accent2);
+  border-radius: 14px;
+  padding: 16px;
+  margin: 16px 0;
+  box-shadow: 0 0 25px rgba(255, 60, 240, 0.25),
+              inset 0 0 20px rgba(0, 255, 204, 0.08);
+}
+
+/* Grid of controls */
+.grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.ctrl {
+  background: var(--panel2);
+  border: 1px solid #3a0044;
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-shadow: inset 0 0 12px #000,
+              0 0 8px rgba(0, 255, 204, 0.15);
+}
+.ctrl span {
+  font-size: 12px;
+  font-family: 'Share Tech Mono', monospace;
+  color: var(--muted);
+  text-shadow: 0 0 4px var(--accent);
+}
+.ctrl output {
+  font-variant-numeric: tabular-nums;
+  background: #080012;
+  border: 1px solid #300040;
+  border-radius: 8px;
+  padding: 2px 8px;
+  align-self: flex-end;
+  color: var(--accent2);
+  min-width: 52px;
+  text-align: right;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 11px;
+  text-shadow: 0 0 6px var(--accent2);
+}
+
+/* Sliders */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 24px;
+  background: transparent;
+  outline: none;
+}
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 8px;
+  background: linear-gradient(90deg, var(--accent2), var(--accent));
+  border-radius: 999px;
+  box-shadow: 0 0 6px var(--accent), 0 0 12px var(--accent2);
+}
+input[type="range"]::-moz-range-track {
+  height: 8px;
+  background: linear-gradient(90deg, var(--accent2), var(--accent));
+  border-radius: 999px;
+  box-shadow: 0 0 6px var(--accent), 0 0 12px var(--accent2);
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  margin-top: -8px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #fff, #00ffcc 40%, #ff3cf0);
+  border: 2px solid #111;
+  box-shadow: 0 0 12px var(--accent), 0 0 20px var(--accent2);
+}
+input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #fff, #00ffcc 40%, #ff3cf0);
+  border: 2px solid #111;
+  box-shadow: 0 0 12px var(--accent), 0 0 20px var(--accent2);
+}
+
+/* Scope */
+#scope {
+  width: 100%;
+  height: auto;
+  display: block;
+  background: #000;
+  border: 1px solid var(--accent2);
+  border-radius: 12px;
+  box-shadow: 0 0 12px var(--accent2);
+}
+
+.botbar p {
+  color: var(--muted);
+  margin: 8px 0 0 0;
+  font-size: 12px;
+  font-family: 'Share Tech Mono', monospace;
+  text-shadow: 0 0 6px var(--accent);
+}
