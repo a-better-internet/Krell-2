@@ -1,184 +1,129 @@
 <!DOCTYPE html>
 <html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Krell Patch Machine</title>
+  <meta name="description" content="A generative alien pulse synthesizer for the browser.">
+  <meta name="theme-color" content="#05070c">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Audiowide&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo">KRELL</div>
+        <div class="brand-sub">Patch Machine <b>II</b></div>
+      </div>
 
-  <head>
-    <meta charset="UTF-8">
-    <title>Krell 3</title>
-    <link rel="stylesheet" href="./style.css">
+      <div class="presetbar" role="group" aria-label="Presets">
+        <div class="preset-nav">
+          <button class="btn icon" id="prevPreset" type="button" title="Previous preset" aria-label="Previous preset">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5"/></svg>
+          </button>
+          <div class="preset-field">
+            <select id="presetSel" aria-label="Preset"></select>
+            <span class="dirty" id="dirtyTag" hidden>edited</span>
+          </div>
+          <button class="btn icon" id="nextPreset" type="button" title="Next preset" aria-label="Next preset">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5"/></svg>
+          </button>
+        </div>
+        <div class="btn-group">
+          <button class="btn" id="saveBtn" type="button" title="Save as a user preset">Save</button>
+          <button class="btn" id="deleteBtn" type="button" title="Delete this user preset">Delete</button>
+        </div>
+        <div class="btn-group">
+          <button class="btn" id="mutateBtn" type="button" title="Nudge every parameter slightly">Mutate</button>
+          <button class="btn" id="randomBtn" type="button" title="Roll a new random patch">Random</button>
+        </div>
+        <div class="btn-group">
+          <button class="btn" id="importBtn" type="button" title="Import a .krell.json patch or bank">Import</button>
+          <button class="btn" id="exportBtn" type="button" title="Download this patch as JSON">Export</button>
+          <button class="btn" id="shareBtn" type="button" title="Copy a link that recreates this patch">Share</button>
+        </div>
+        <input type="file" id="importFile" accept=".json,application/json" hidden>
+      </div>
 
-  </head>
-    
-  <body>
-  <div id="app" class="wrap">
-  <header class="topbar">
-    <h1>Krell Patch Machine</h1>
-    <div class="transport">
-      <button id="startBtn" class="primary">Start</button>
-      <button id="stopBtn">Stop</button>
-      <button id="reseedBtn" title="New random seed / state">Reseed</button>
-      <span class="status-dot" id="statusDot" title="engine status"></span>
-    </div>
-  </header>
+      <div class="transport">
+        <button class="btn rec" id="recBtn" type="button" aria-pressed="false" title="Record the output to an audio file">
+          <span class="rec-dot" aria-hidden="true"></span><span class="rec-txt">Rec</span>
+        </button>
+        <button class="btn play" id="playBtn" type="button" aria-pressed="false" title="Start / stop (Space)">
+          <span class="play-ico" aria-hidden="true"></span><span class="play-txt">Start</span>
+        </button>
+      </div>
+    </header>
 
-  <section class="panel">
-    <h2>Engine</h2>
-    <div class="grid">
-      <!-- Core controls -->
-      <label class="ctrl"><span>Master Volume</span>
-        <input type="range" id="masterGain" min="0" max="1" step="0.001" value="0.35">
-        <output for="masterGain">0.35</output>
-      </label>
+    <section class="display" aria-label="Output">
+      <div class="screen">
+        <canvas id="scope" aria-label="Oscilloscope"></canvas>
+        <div class="screen-glow" id="screenGlow" aria-hidden="true"></div>
+        <div class="hud">
+          <div class="hud-tl">
+            <div class="hud-note" id="hudNote" aria-live="off">—</div>
+            <div class="hud-sub" id="hudSub">Press Start or hit Space</div>
+          </div>
+          <div class="hud-tr">
+            <div class="view-toggle" role="group" aria-label="Display mode">
+              <button type="button" data-view="scope" aria-pressed="true">Scope</button>
+              <button type="button" data-view="spectrum" aria-pressed="false">Spectrum</button>
+            </div>
+          </div>
+          <div class="hud-bl">
+            <div class="voice-leds" id="voiceLeds" title="Voice activity"><i></i><i></i><i></i><i></i></div>
+          </div>
+          <div class="hud-br">
+            <span class="seed-label">Seed</span>
+            <code id="seedOut">—</code>
+            <button class="mini" id="reseedBtn" type="button" title="New random seed — changes the sequence, not the sound">Reseed</button>
+          </div>
+        </div>
+      </div>
 
-      <label class="ctrl"><span>Event Rate (Hz)</span>
-        <input type="range" id="eventHz" min="0.05" max="4" step="0.01" value="0.60">
-        <output for="eventHz">0.60</output>
-      </label>
+      <div class="outstage">
+        <div class="meters" aria-hidden="true">
+          <div class="meter" id="meterL"><div class="m-fill"></div><div class="m-peak"></div><span>L</span></div>
+          <div class="meter" id="meterR"><div class="m-fill"></div><div class="m-peak"></div><span>R</span></div>
+          <div class="meter gr" id="meterGR" title="Limiter gain reduction"><div class="m-fill"></div><span>GR</span></div>
+          <div class="m-scale"><i style="--p:1">0</i><i style="--p:.875">-6</i><i style="--p:.75">-12</i><i style="--p:.5">-24</i><i style="--p:0">-48</i></div>
+        </div>
+        <div class="leds">
+          <span class="led warn" id="limitLed" title="Limiter is reducing gain">Limit</span>
+          <span class="led danger" id="clipLed" title="Output reached full scale">Clip</span>
+        </div>
+        <div class="master-slot" id="masterSlot" style="--h:166"></div>
+      </div>
+    </section>
 
-      <label class="ctrl"><span>Randomness</span>
-        <input type="range" id="randomness" min="0" max="1" step="0.01" value="0.60">
-        <output for="randomness">0.60</output>
-      </label>
+    <main class="modules" id="modules"></main>
 
-      <label class="ctrl"><span>Glide Time (ms)</span>
-        <input type="range" id="glideMs" min="0" max="2000" step="1" value="250">
-        <output for="glideMs">250</output>
-      </label>
+    <footer class="footer">
+      <p>
+        <kbd>Space</kbd> start / stop · drag a knob (<kbd>Shift</kbd> for fine) · double-click to reset ·
+        click a value to type it · focus a knob, then scroll or use the arrow keys
+      </p>
+      <p class="sig">
+        Voices → warp → DC block → ping-pong delay + convolution space → limiter → soft ceiling at −0.2 dBFS
+      </p>
+    </footer>
+  </div>
 
-      <label class="ctrl"><span>Env Attack (ms)</span>
-        <input type="range" id="attackMs" min="1" max="3000" step="1" value="400">
-        <output for="attackMs">400</output>
-      </label>
+  <dialog id="saveDlg" aria-labelledby="saveTitle">
+    <form method="dialog">
+      <h3 id="saveTitle">Save preset</h3>
+      <input id="saveName" name="name" maxlength="40" required placeholder="Preset name" autocomplete="off">
+      <div class="dlg-actions">
+        <button class="btn" value="cancel" formnovalidate>Cancel</button>
+        <button class="btn primary" value="save">Save</button>
+      </div>
+    </form>
+  </dialog>
 
-      <label class="ctrl"><span>Pulse Width (ms)</span>
-        <input type="range" id="pulseWidth" min="10" max="4000" step="10" value="600">
-        <output for="pulseWidth">600</output>
-      </label>
-
-      <label class="ctrl"><span>Env Release (ms)</span>
-        <input type="range" id="releaseMs" min="50" max="6000" step="1" value="1600">
-        <output for="releaseMs">1600</output>
-      </label>
-
-      <label class="ctrl"><span>Pitch Min (MIDI)</span>
-        <input type="range" id="pitchMin" min="36" max="84" step="1" value="45">
-        <output for="pitchMin">45</output>
-      </label>
-
-      <label class="ctrl"><span>Pitch Max (MIDI)</span>
-        <input type="range" id="pitchMax" min="36" max="96" step="1" value="65">
-        <output for="pitchMax">65</output>
-      </label>
-
-      <label class="ctrl"><span>LFO Rate (Hz)</span>
-        <input type="range" id="lfoRate" min="0.01" max="10" step="0.01" value="0.35">
-        <output for="lfoRate">0.35</output>
-      </label>
-
-      <label class="ctrl"><span>LFO Depth (cents)</span>
-        <input type="range" id="lfoDepth" min="0" max="1200" step="1" value="80">
-        <output for="lfoDepth">80</output>
-      </label>
-
-      <label class="ctrl"><span>Filter Cutoff (Hz)</span>
-        <input type="range" id="cutoffHz" min="60" max="12000" step="1" value="1200">
-        <output for="cutoffHz">1200</output>
-      </label>
-
-      <label class="ctrl"><span>Filter Q</span>
-        <input type="range" id="filterQ" min="0.1" max="24" step="0.1" value="0.3">
-        <output for="filterQ">0.3</output>
-      </label>
-
-      <label class="ctrl"><span>Env→Filter Amount</span>
-        <input type="range" id="envToFilter" min="0" max="1" step="0.01" value="0.5">
-        <output for="envToFilter">0.50</output>
-      </label>
-
-      <label class="ctrl"><span>Delay Time (s)</span>
-        <input type="range" id="delayTime" min="0" max="1.2" step="0.001" value="0.35">
-        <output for="delayTime">0.35</output>
-      </label>
-
-      <label class="ctrl"><span>Delay Feedback</span>
-        <input type="range" id="delayFb" min="0" max="0.95" step="0.001" value="0.35">
-        <output for="delayFb">0.35</output>
-      </label>
-
-      <label class="ctrl"><span>Delay Mix</span>
-        <input type="range" id="delayMix" min="0" max="1" step="0.001" value="0.30">
-        <output for="delayMix">0.30</output>
-      </label>
-
-      <label class="ctrl"><span>Voice Blend (Sine↔Triangle)</span>
-        <input type="range" id="blend" min="0" max="1" step="0.01" value="0.40">
-        <output for="blend">0.40</output>
-      </label>
-
-      <label class="ctrl"><span>Scale</span>
-        <select id="scaleSel">
-          <option value="pent_minor" selected>Pentatonic (minor)</option>
-          <option value="pent_major">Pentatonic (major)</option>
-          <option value="aeolian">Aeolian</option>
-          <option value="dorian">Dorian</option>
-          <option value="chromatic">Chromatic</option>
-          <option value="whole">Whole Tone</option>
-        </select>
-      </label>
-
-      <!-- Alien ext -->
-      <label class="ctrl"><span>Noise Mix (→ LP)</span>
-        <input type="range" id="noiseMix" min="0" max="1" step="0.001" value="0.08">
-        <output for="noiseMix">0.08</output>
-      </label>
-
-      <label class="ctrl"><span>Noise Band Mix (→ BP)</span>
-        <input type="range" id="noiseBandMix" min="0" max="1" step="0.001" value="0.25">
-        <output for="noiseBandMix">0.25</output>
-      </label>
-
-      <label class="ctrl"><span>Noise Band Center (Hz)</span>
-        <input type="range" id="noiseBandHz" min="100" max="8000" step="1" value="1800">
-        <output for="noiseBandHz">1800</output>
-      </label>
-
-      <label class="ctrl"><span>Noise Band Q</span>
-        <input type="range" id="noiseBandQ" min="0.1" max="20" step="0.1" value="3">
-        <output for="noiseBandQ">3</output>
-      </label>
-
-      <label class="ctrl"><span>Alien Warp (Drive/Mix)</span>
-        <input type="range" id="alienWarp" min="0" max="1" step="0.001" value="0.10">
-        <output for="alienWarp">0.10</output>
-      </label>
-
-      <label class="ctrl"><span>Chaos Rate (Hz)</span>
-        <input type="range" id="chaosRate" min="0.05" max="8" step="0.01" value="0.25">
-        <output for="chaosRate">0.25</output>
-      </label>
-
-      <label class="ctrl"><span>Chaos Depth</span>
-        <input type="range" id="chaosDepth" min="0" max="1" step="0.001" value="0.50">
-        <output for="chaosDepth">0.50</output>
-      </label>
-
-      <label class="ctrl"><span>Space Mix (Reverb)</span>
-        <input type="range" id="spaceMix" min="0" max="1" step="0.001" value="0.25">
-        <output for="spaceMix">0.25</output>
-      </label>
-    </div>
-  </section>
-
-  <section class="panel">
-    <h2>Scope</h2>
-    <canvas id="scope" width="900" height="160"></canvas>
-  </section>
-
-  <footer class="botbar">
-    <p>Polish: gentle random panning per pulse + reverb ducking for clearer throb. Baseline features intact.</p>
-  </footer>
-</div>
-    <script  src="./script.js"></script>
-
-  </body>
-  
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="./script.js"></script>
+</body>
 </html>
