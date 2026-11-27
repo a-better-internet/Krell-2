@@ -27,7 +27,7 @@ global:  voice bus ─ warp (dry | drive → shaper → wet) ─ DC block ─┬
 - Drone floor, sub oscillator, detune, filter key tracking, LFO shapes and LFO→filter, chaos→filter, three warp modes, delay tone and stereo width, reverb size and brightness, duck depth, pan spread.
 - A seeded RNG: the same seed and patch always give the same sequence.
 - Scope and spectrum views, peak meters, limiter gain-reduction meter, and Limit/Clip indicators.
-- Record the output to a file.
+- Record the output to a lossless 24-bit stereo WAV file (up to 30 minutes).
 
 ## Controls
 

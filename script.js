@@ -1040,7 +1040,6 @@
   let ac = null, engine = null, seq = null;
   let running = false, schedTimer = null, suspendTimer = null;
   let analyser = null, anL = null, anR = null, timeBuf = null, freqBuf = null, mBufL = null, mBufR = null;
-  let recDest = null, recorder = null, recChunks = [], recStartedAt = 0;
   const eventQueue = [];
   let lastEv = [];
 
@@ -1383,7 +1382,7 @@
     // Let delay/reverb tails ring out, then suspend to save CPU.
     clearTimeout(suspendTimer);
     suspendTimer = setTimeout(() => {
-      if (!running && !recorder && ac) ac.suspend().catch(() => {});
+      if (!running && !rec && ac) ac.suspend().catch(() => {});
     }, 8000 + state.spaceSize * 1000);
   }
 
@@ -1400,51 +1399,168 @@
     }
   }
 
-  // ---- Recording
-  function pickMime() {
-    if (!window.MediaRecorder || !MediaRecorder.isTypeSupported) return '';
-    return ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/mp4'].find(t => MediaRecorder.isTypeSupported(t)) || '';
+  // ---- Recording: lossless 24-bit stereo WAV
+  // An AudioWorklet taps the final output (after the limiter and ceiling) and
+  // streams raw PCM to the main thread, where it is packed straight into 24-bit
+  // frames. Falls back to a ScriptProcessor where AudioWorklet is unavailable.
+  const REC_MAX_SEC = 30 * 60;
+  const REC_WORKLET = `
+    class KrellRecorder extends AudioWorkletProcessor {
+      constructor() {
+        super();
+        this.on = false;
+        this.alloc();
+        this.port.onmessage = e => {
+          if (e.data === 'start') this.on = true;
+          else if (e.data === 'stop') { this.flush(); this.on = false; this.port.postMessage({ done: true }); }
+        };
+      }
+      alloc() { this.L = new Float32Array(8192); this.R = new Float32Array(8192); this.n = 0; }
+      flush() {
+        if (!this.n) return;
+        const L = this.L.slice(0, this.n), R = this.R.slice(0, this.n);
+        this.port.postMessage({ L, R }, [L.buffer, R.buffer]);
+        this.n = 0;
+      }
+      process(inputs) {
+        const inp = inputs[0];
+        if (this.on && inp && inp.length) {
+          const l = inp[0], r = inp[1] || inp[0];
+          this.L.set(l, this.n);
+          this.R.set(r, this.n);
+          this.n += l.length;
+          if (this.n + 128 > this.L.length) this.flush();
+        }
+        return true;
+      }
+    }
+    registerProcessor('krell-recorder', KrellRecorder);`;
+
+  let rec = null;
+  let recWorklet = null;
+
+  // Interleave a stereo chunk into 24-bit little-endian PCM
+  function pcm24(L, R) {
+    const out = new Uint8Array(L.length * 6);
+    let o = 0;
+    for (let i = 0; i < L.length; i++) {
+      let n = Math.round(clamp(L[i], -1, 1) * 8388607);
+      out[o++] = n & 255; out[o++] = (n >> 8) & 255; out[o++] = (n >> 16) & 255;
+      n = Math.round(clamp(R[i], -1, 1) * 8388607);
+      out[o++] = n & 255; out[o++] = (n >> 8) & 255; out[o++] = (n >> 16) & 255;
+    }
+    return out;
+  }
+
+  function wavHeader(frames, sr) {
+    const block = 6, dataLen = frames * block;
+    const v = new DataView(new ArrayBuffer(44));
+    const str = (o, t) => { for (let i = 0; i < t.length; i++) v.setUint8(o + i, t.charCodeAt(i)); };
+    str(0, 'RIFF'); v.setUint32(4, 36 + dataLen, true); str(8, 'WAVE');
+    str(12, 'fmt '); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 2, true);
+    v.setUint32(24, sr, true); v.setUint32(28, sr * block, true); v.setUint16(32, block, true); v.setUint16(34, 24, true);
+    str(36, 'data'); v.setUint32(40, dataLen, true);
+    return v.buffer;
+  }
+
+  async function makeTap(onChunk) {
+    if (ac.audioWorklet && typeof AudioWorkletNode !== 'undefined') {
+      try {
+        if (!recWorklet) {
+          const url = URL.createObjectURL(new Blob([REC_WORKLET], { type: 'application/javascript' }));
+          recWorklet = ac.audioWorklet.addModule(url);
+        }
+        await recWorklet;
+        const node = new AudioWorkletNode(ac, 'krell-recorder', {
+          numberOfInputs: 1, numberOfOutputs: 1, outputChannelCount: [1],
+          channelCount: 2, channelCountMode: 'explicit', channelInterpretation: 'speakers',
+        });
+        let finish = null;
+        node.port.onmessage = e => {
+          if (e.data.L) onChunk(e.data.L, e.data.R);
+          else if (e.data.done && finish) finish();
+        };
+        return {
+          node,
+          start: () => node.port.postMessage('start'),
+          stop: () => new Promise(res => { finish = res; node.port.postMessage('stop'); setTimeout(res, 1000); }),
+        };
+      } catch (err) {
+        recWorklet = null;
+        console.warn('AudioWorklet recorder unavailable, using fallback', err);
+      }
+    }
+    const node = ac.createScriptProcessor(4096, 2, 1);
+    let on = false;
+    node.onaudioprocess = e => {
+      if (!on) return;
+      const b = e.inputBuffer;
+      onChunk(b.getChannelData(0), b.getChannelData(b.numberOfChannels > 1 ? 1 : 0));
+    };
+    return { node, start: () => { on = true; }, stop: () => { on = false; return Promise.resolve(); } };
   }
 
   async function startRec() {
-    if (!ensureAudio()) return;
-    if (!recDest) {
-      recDest = ac.createMediaStreamDestination();
-      engine.output.connect(recDest);
-    }
-    const mimeType = pickMime();
+    if (rec || !ensureAudio()) return;
+    const r = { parts: [], frames: 0, busy: true, startedAt: performance.now() };
+    rec = r;
+    updateRec();
     try {
-      recorder = new MediaRecorder(recDest.stream, mimeType ? { mimeType, audioBitsPerSecond: 256000 } : undefined);
-    } catch (_) {
-      recorder = null;
+      const sr = ac.sampleRate;
+      r.tap = await makeTap((L, R) => {
+        if (rec !== r || r.stopping) return;
+        r.parts.push(pcm24(L, R));
+        r.frames += L.length;
+        if (r.frames >= REC_MAX_SEC * sr) { stopRec(); toast('Reached the 30-minute recording limit'); }
+      });
+      r.sink = ac.createGain();
+      r.sink.gain.value = 0; // keeps the tap pulled by the graph without adding sound
+      engine.output.connect(r.tap.node);
+      r.tap.node.connect(r.sink);
+      r.sink.connect(ac.destination);
+      if (!running) await start();
+      else if (ac.state !== 'running') await ac.resume();
+      clearTimeout(suspendTimer);
+      r.tap.start();
+      r.startedAt = performance.now();
+    } catch (err) {
+      console.error(err);
+      rec = null;
+      updateRec();
       toast('Recording is not supported here');
       return;
     }
-    recChunks = [];
-    recorder.ondataavailable = e => { if (e.data && e.data.size) recChunks.push(e.data); };
-    recorder.onstop = () => {
-      const type = recorder.mimeType || mimeType || 'audio/webm';
-      const ext = /ogg/.test(type) ? 'ogg' : /mp4/.test(type) ? 'm4a' : 'webm';
-      const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
-      download(new Blob(recChunks, { type }), `krell-${slug(current.name)}-${stamp}.${ext}`);
-      recorder = null;
-      updateRec();
-      toast('Recording saved');
-    };
-    recorder.start(1000);
-    recStartedAt = performance.now();
-    if (!running) await start();
+    r.busy = false;
     updateRec();
   }
 
-  function stopRec() {
-    if (recorder && recorder.state !== 'inactive') recorder.stop();
+  async function stopRec() {
+    const r = rec;
+    if (!r || r.busy || r.stopping) return;
+    r.busy = true;
+    await r.tap.stop();
+    r.stopping = true;
+    try { engine.output.disconnect(r.tap.node); } catch (_) { /* already gone */ }
+    try { r.tap.node.disconnect(); r.sink.disconnect(); } catch (_) { /* already gone */ }
+    rec = null;
+    updateRec();
+    if (!running) {
+      clearTimeout(suspendTimer);
+      suspendTimer = setTimeout(() => { if (!running && !rec && ac) ac.suspend().catch(() => {}); }, 4000);
+    }
+    if (!r.frames) { toast('Nothing was recorded'); return; }
+    const sr = ac.sampleRate;
+    const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+    download(new Blob([wavHeader(r.frames, sr), ...r.parts], { type: 'audio/wav' }), `krell-${slug(current.name)}-${stamp}.wav`);
+    const secs = Math.round(r.frames / sr);
+    toast(`Saved ${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')} WAV (24-bit, ${(sr / 1000).toFixed(1)} kHz)`);
   }
 
   function updateRec() {
     const b = $('#recBtn');
-    const on = !!recorder;
+    const on = !!rec;
     b.classList.toggle('on', on);
+    b.disabled = !!(rec && rec.busy);
     b.setAttribute('aria-pressed', String(on));
     if (!on) $('.rec-txt', b).textContent = 'Rec';
   }
@@ -1800,8 +1916,8 @@
   function frame(ts) {
     requestAnimationFrame(frame);
     const live = ac && ac.state === 'running';
-    if (recorder) {
-      const s = Math.floor((performance.now() - recStartedAt) / 1000);
+    if (rec && !rec.busy) {
+      const s = Math.floor((performance.now() - rec.startedAt) / 1000);
       $('#recBtn .rec-txt').textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
     }
     if (!live) {
@@ -1836,8 +1952,7 @@
   // ===========================================================================
   function wire() {
     $('#playBtn').addEventListener('click', toggle);
-    $('#recBtn').addEventListener('click', () => (recorder ? stopRec() : startRec()));
-    if (!window.MediaRecorder) $('#recBtn').hidden = true;
+    $('#recBtn').addEventListener('click', () => (rec ? stopRec() : startRec()));
     $('#reseedBtn').addEventListener('click', () => { setSeed(newSeed()); saveSessionSoon(); toast(`Seed ${seedHex(seed)}`); });
 
     $('#presetSel').addEventListener('change', e => loadPresetKey(e.target.value));
