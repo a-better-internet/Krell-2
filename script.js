@@ -310,9 +310,9 @@
   // Factory presets (missing params fall back to defaults)
   // ===========================================================================
   const FACTORY = [
-    { name: 'Krell Classic', desc: 'The original patch — slow pentatonic throbs.', params: {} },
+    { name: 'Krell Classic', cat: 'Classic', desc: 'The original patch — slow pentatonic throbs.', params: {} },
     {
-      name: 'Forbidden Planet', desc: 'Wide vibrato, long glides, overtone tuning.',
+      name: 'Forbidden Planet', cat: 'Classic', desc: 'Wide vibrato, long glides, overtone tuning.',
       params: {
         eventHz: 0.32, randomness: 0.5, glideMs: 900, pitchMin: 50, pitchMax: 74, scale: 'overtone',
         attackMs: 300, pulseWidth: 900, releaseMs: 3000, blend: 0.15, detune: 6,
@@ -323,7 +323,7 @@
       },
     },
     {
-      name: 'Altair IV Nightfall', desc: 'Three-voice drone cloud with drifting filter.',
+      name: 'Altair IV Nightfall', cat: 'Drones & Pads', desc: 'Three-voice drone cloud with drifting filter.',
       params: {
         voices: 3, eventHz: 0.18, density: 0.9, randomness: 0.4, glideMs: 1200, pitchMin: 38, pitchMax: 62,
         scale: 'pent_major', root: 2, attackMs: 2600, pulseWidth: 2400, releaseMs: 7000, droneFloor: 0.12,
@@ -335,7 +335,7 @@
       },
     },
     {
-      name: 'Id Monster', desc: 'Low, folded and resonant. Something is out there.',
+      name: 'Id Monster', cat: 'Textures & FX', desc: 'Low, folded and resonant. Something is out there.',
       params: {
         eventHz: 0.45, randomness: 0.7, pitchMin: 28, pitchMax: 46, scale: 'phrygian', root: 4, glideMs: 600,
         attackMs: 120, pulseWidth: 900, releaseMs: 2200, blend: 0.8, detune: 18, subLevel: 0.7,
@@ -347,7 +347,7 @@
       },
     },
     {
-      name: 'Krell Machinery', desc: 'Locked whole-tone loop, ticking and metallic.',
+      name: 'Krell Machinery', cat: 'Sequences & Machines', desc: 'Locked whole-tone loop, ticking and metallic.',
       params: {
         voices: 2, eventHz: 3.6, density: 0.82, randomness: 0.35, memory: 0.9, loopLen: 6,
         pitchMin: 52, pitchMax: 79, scale: 'whole', glideMs: 15, attackMs: 4, pulseWidth: 50, releaseMs: 260,
@@ -359,7 +359,7 @@
       },
     },
     {
-      name: 'Ion Storm', desc: 'Maximum chaos: rectified sparks and noise squalls.',
+      name: 'Ion Storm', cat: 'Textures & FX', desc: 'Maximum chaos: rectified sparks and noise squalls.',
       params: {
         voices: 3, eventHz: 1.6, density: 0.7, randomness: 1, pitchMin: 40, pitchMax: 90, scale: 'chromatic',
         glideMs: 80, attackMs: 30, pulseWidth: 180, releaseMs: 900, blend: 0.5, detune: 25,
@@ -371,7 +371,7 @@
       },
     },
     {
-      name: 'Glass Rain', desc: 'High overtone droplets in a bright hall.',
+      name: 'Glass Rain', cat: 'Textures & FX', desc: 'High overtone droplets in a bright hall.',
       params: {
         voices: 4, eventHz: 2.4, density: 0.55, randomness: 0.55, pitchMin: 72, pitchMax: 96, scale: 'overtone', root: 7,
         glideMs: 0, attackMs: 2, pulseWidth: 25, releaseMs: 1400, blend: 0.85, detune: 3,
@@ -382,7 +382,7 @@
       },
     },
     {
-      name: 'Pulsar Beacon', desc: 'A four-step octatonic signal, repeating forever.',
+      name: 'Pulsar Beacon', cat: 'Sequences & Machines', desc: 'A four-step octatonic signal, repeating forever.',
       params: {
         eventHz: 1.25, randomness: 0.2, memory: 1, loopLen: 4, pitchMin: 45, pitchMax: 69, scale: 'octatonic',
         glideMs: 120, attackMs: 8, pulseWidth: 140, releaseMs: 600, blend: 0.3, detune: 12, subLevel: 0.5,
@@ -393,7 +393,7 @@
       },
     },
     {
-      name: 'Deep Space Choir', desc: 'Slow, wide, four-voice dorian pads.',
+      name: 'Deep Space Choir', cat: 'Drones & Pads', desc: 'Slow, wide, four-voice dorian pads.',
       params: {
         voices: 4, eventHz: 0.28, density: 0.95, randomness: 0.45, pitchMin: 48, pitchMax: 72, scale: 'dorian', root: 9,
         glideMs: 700, attackMs: 1800, pulseWidth: 2200, releaseMs: 5500, droneFloor: 0.05,
@@ -405,7 +405,7 @@
       },
     },
     {
-      name: 'Ancient Signal', desc: 'A half-remembered Hirajōshi transmission.',
+      name: 'Ancient Signal', cat: 'Classic', desc: 'A half-remembered Hirajōshi transmission.',
       params: {
         eventHz: 0.9, density: 0.75, randomness: 0.3, memory: 0.7, loopLen: 5, pitchMin: 57, pitchMax: 81,
         scale: 'hirajoshi', root: 5, glideMs: 400, attackMs: 60, pulseWidth: 300, releaseMs: 1800, blend: 0.1,
@@ -416,7 +416,7 @@
       },
     },
     {
-      name: 'Monolith Drone', desc: 'Sub-heavy, near-static. Turn it up.',
+      name: 'Monolith Drone', cat: 'Drones & Pads', desc: 'Sub-heavy, near-static. Turn it up.',
       params: {
         voices: 2, eventHz: 0.1, randomness: 0.25, pitchMin: 31, pitchMax: 43, glideMs: 2500,
         attackMs: 4000, pulseWidth: 5000, releaseMs: 9000, droneFloor: 0.3, blend: 0.45, detune: 7, subLevel: 0.6,
@@ -426,7 +426,167 @@
         spaceMix: 0.5, spaceSize: 8, spaceBright: 0.2, duckDepth: 0.1, panSpread: 0.5, masterDb: 3,
       },
     },
+    // ---- Classic
+    {
+      name: 'Theremin Ghost', cat: 'Classic', desc: 'One long, wavering voice sliding between notes.',
+      params: {
+        eventHz: 0.45, randomness: 0.35, pitchMin: 60, pitchMax: 84, scale: 'chromatic', glideMs: 1400,
+        attackMs: 600, pulseWidth: 1500, releaseMs: 2500, blend: 0, cutoffHz: 5000, filterQ: 0, envToFilter: 0.1,
+        noiseMix: 0, noiseBandMix: 0.04, alienWarp: 0.04, lfoRate: 5.8, lfoDepth: 40, chaosDepth: 0.2,
+        delayTime: 0.38, delayFb: 0.3, delayMix: 0.2, delayTone: 4000, delayWidth: 0.7,
+        spaceMix: 0.45, spaceSize: 4, spaceBright: 0.5, duckDepth: 0.4, panSpread: 0.2, masterDb: -4.5,
+      },
+    },
+    // ---- Drones & Pads
+    {
+      name: 'Tidal Lock', cat: 'Drones & Pads', desc: 'Four lydian voices that barely move. Very slow.',
+      params: {
+        voices: 4, eventHz: 0.07, density: 1, randomness: 0.3, pitchMin: 36, pitchMax: 60, scale: 'lydian', root: 5,
+        glideMs: 2000, attackMs: 5000, pulseWidth: 6000, releaseMs: 10000, droneFloor: 0.25,
+        blend: 0.3, detune: 30, subLevel: 0.2, cutoffHz: 900, filterQ: 2, envToFilter: 0.2, keyTrack: 0.3,
+        noiseMix: 0.05, noiseBandMix: 0.1, noiseBandHz: 1100, noiseBandQ: 3, alienWarp: 0.04,
+        lfoRate: 0.05, lfoDepth: 10, lfoFilter: 900, chaosRate: 0.06, chaosDepth: 0.2, chaosFilter: 0.4,
+        delayTime: 1.3, delayFb: 0.3, delayMix: 0.12, delayTone: 2200, delayWidth: 1,
+        spaceMix: 0.65, spaceSize: 10, spaceBright: 0.4, duckDepth: 0.05, panSpread: 0.9, masterDb: 2.5,
+      },
+    },
+    {
+      name: 'Cathedral of Glass', cat: 'Drones & Pads', desc: 'Bright mixolydian swells in an enormous room.',
+      params: {
+        voices: 4, eventHz: 0.4, density: 0.9, randomness: 0.4, pitchMin: 55, pitchMax: 79, scale: 'mixolydian', root: 7,
+        glideMs: 300, attackMs: 900, pulseWidth: 1500, releaseMs: 6000, blend: 0.9, detune: 14,
+        cutoffHz: 3500, filterQ: 4, envToFilter: 0.2, keyTrack: 0.6, noiseMix: 0.02, noiseBandMix: 0.12,
+        noiseBandHz: 5000, noiseBandQ: 9, alienWarp: 0.03, lfoRate: 0.3, lfoDepth: 9, chaosDepth: 0.2,
+        delayTime: 0.5, delayFb: 0.45, delayMix: 0.25, delayTone: 6000, delayWidth: 1,
+        spaceMix: 0.75, spaceSize: 10, spaceBright: 0.75, duckDepth: 0.15, panSpread: 0.85, masterDb: 3,
+      },
+    },
+    {
+      name: 'Dead Star', cat: 'Drones & Pads', desc: 'Folded sub-bass groaning under a closed filter.',
+      params: {
+        voices: 2, eventHz: 0.12, randomness: 0.3, pitchMin: 24, pitchMax: 36, scale: 'octatonic', glideMs: 1800,
+        attackMs: 3000, pulseWidth: 4000, releaseMs: 8000, droneFloor: 0.35, blend: 0.2, detune: 5, subLevel: 0.9,
+        cutoffHz: 160, filterQ: 18, envToFilter: 0.5, noiseMix: 0.1, noiseBandMix: 0.15, noiseBandHz: 300, noiseBandQ: 3,
+        alienWarp: 0.45, warpMode: 'fold', lfoRate: 0.03, lfoDepth: 6, lfoFilter: 1500, chaosRate: 0.05, chaosDepth: 0.15,
+        chaosFilter: 0.3, delayTime: 1.4, delayFb: 0.25, delayMix: 0.1, delayTone: 1200, delayWidth: 1,
+        spaceMix: 0.45, spaceSize: 7, spaceBright: 0.1, duckDepth: 0.1, panSpread: 0.4, masterDb: 2,
+      },
+    },
+    {
+      name: 'Ion Engine Idle', cat: 'Drones & Pads', desc: 'A humming engine with a fluttering filter.',
+      params: {
+        voices: 2, eventHz: 0.5, randomness: 0.2, pitchMin: 33, pitchMax: 40, scale: 'pent_minor', glideMs: 500,
+        attackMs: 1500, pulseWidth: 3000, releaseMs: 3000, droneFloor: 0.4, blend: 0.8, detune: 3, subLevel: 0.4,
+        cutoffHz: 500, filterQ: 12, envToFilter: 0.2, noiseMix: 0.08, noiseBandMix: 0.4, noiseBandHz: 280, noiseBandQ: 4,
+        alienWarp: 0.4, lfoRate: 9, lfoDepth: 6, lfoFilter: 400, lfoShape: 'square', chaosRate: 0.2, chaosDepth: 0.1,
+        delayTime: 0.3, delayFb: 0.2, delayMix: 0.08, delayTone: 2000, delayWidth: 0.5,
+        spaceMix: 0.3, spaceSize: 2.5, spaceBright: 0.3, duckDepth: 0.3, panSpread: 0.3, masterDb: 4,
+      },
+    },
+    {
+      name: 'Solar Wind', cat: 'Drones & Pads', desc: 'Mostly noise: gusts of filtered breath over low tones.',
+      params: {
+        voices: 3, eventHz: 0.2, density: 0.9, randomness: 0.6, pitchMin: 30, pitchMax: 42, scale: 'aeolian', glideMs: 1500,
+        attackMs: 2500, pulseWidth: 1500, releaseMs: 5000, droneFloor: 0.1, blend: 0.5, detune: 12,
+        cutoffHz: 600, filterQ: 6, envToFilter: 0.6, noiseMix: 0.7, noiseBandMix: 0.9, noiseBandHz: 1200, noiseBandQ: 2,
+        alienWarp: 0.08, lfoRate: 0.1, lfoDepth: 15, lfoFilter: 1200, chaosRate: 0.15, chaosDepth: 0.4, chaosFilter: 0.9,
+        delayTime: 0.7, delayFb: 0.3, delayMix: 0.1, delayTone: 2500, delayWidth: 1,
+        spaceMix: 0.6, spaceSize: 8, spaceBright: 0.45, duckDepth: 0.2, panSpread: 1, masterDb: 2.5,
+      },
+    },
+    // ---- Sequences & Machines
+    {
+      name: 'Subterranean Pulse', cat: 'Sequences & Machines', desc: 'A locked eight-step bassline, resonant and driven.',
+      params: {
+        eventHz: 2, density: 0.9, randomness: 0.2, memory: 1, loopLen: 8, pitchMin: 28, pitchMax: 40,
+        scale: 'pent_minor', root: 9, glideMs: 30, attackMs: 3, pulseWidth: 90, releaseMs: 350,
+        blend: 0.6, subLevel: 0.8, cutoffHz: 220, filterQ: 14, envToFilter: 0.95, keyTrack: 0.2,
+        noiseMix: 0.04, noiseBandMix: 0.05, alienWarp: 0.35, lfoDepth: 4, chaosDepth: 0,
+        delayTime: 0.25, delayFb: 0.3, delayMix: 0.15, delayTone: 2000, delayWidth: 0.8,
+        spaceMix: 0.2, spaceSize: 1.8, spaceBright: 0.4, duckDepth: 0.8, panSpread: 0.15, masterDb: 9,
+      },
+    },
+    {
+      name: 'Morse From Orbit', cat: 'Sequences & Machines', desc: 'Pure sine beeps in a long repeating message.',
+      params: {
+        eventHz: 6, density: 0.6, randomness: 0.1, memory: 0.95, loopLen: 12, pitchMin: 76, pitchMax: 88,
+        scale: 'pent_major', glideMs: 0, attackMs: 1, pulseWidth: 40, releaseMs: 80, blend: 0,
+        cutoffHz: 9000, filterQ: 0, envToFilter: 0, noiseMix: 0, noiseBandMix: 0.05, noiseBandHz: 6000, noiseBandQ: 8,
+        alienWarp: 0, lfoDepth: 0, chaosDepth: 0,
+        delayTime: 0.09, delayFb: 0.4, delayMix: 0.25, delayTone: 7000, delayWidth: 1,
+        spaceMix: 0.3, spaceSize: 2.5, spaceBright: 0.7, duckDepth: 0.8, panSpread: 0.3, masterDb: 2.5,
+      },
+    },
+    {
+      name: 'Telemetry', cat: 'Sequences & Machines', desc: 'A sixteen-step dorian readout with echoes.',
+      params: {
+        eventHz: 2.8, density: 0.85, randomness: 0.25, memory: 1, loopLen: 16, pitchMin: 57, pitchMax: 76,
+        scale: 'dorian', root: 2, glideMs: 40, attackMs: 5, pulseWidth: 120, releaseMs: 500, blend: 0.5, detune: 8,
+        cutoffHz: 1800, filterQ: 9, envToFilter: 0.7, keyTrack: 0.5, noiseMix: 0.03, noiseBandMix: 0.1,
+        noiseBandHz: 2500, noiseBandQ: 8, alienWarp: 0.12, lfoRate: 0.4, lfoDepth: 6, chaosDepth: 0.05,
+        delayTime: 0.27, delayFb: 0.5, delayMix: 0.3, delayTone: 4500, delayWidth: 1,
+        spaceMix: 0.3, spaceSize: 3, spaceBright: 0.5, duckDepth: 0.7, panSpread: 0.45, masterDb: 7.5,
+      },
+    },
+    {
+      name: 'Lullaby Protocol', cat: 'Sequences & Machines', desc: 'A gentle, half-repeating major-pentatonic tune.',
+      params: {
+        eventHz: 0.8, density: 0.9, randomness: 0.3, memory: 0.6, loopLen: 6, pitchMin: 60, pitchMax: 79,
+        scale: 'pent_major', glideMs: 200, attackMs: 120, pulseWidth: 250, releaseMs: 1600, blend: 0.7,
+        cutoffHz: 2600, filterQ: 1, envToFilter: 0.2, noiseMix: 0.02, noiseBandMix: 0.06, alienWarp: 0.02,
+        lfoRate: 4.5, lfoDepth: 12, chaosDepth: 0.15,
+        delayTime: 0.5, delayFb: 0.45, delayMix: 0.3, delayTone: 3500, delayWidth: 0.9,
+        spaceMix: 0.5, spaceSize: 5, spaceBright: 0.55, duckDepth: 0.5, panSpread: 0.35, masterDb: -2,
+      },
+    },
+    // ---- Textures & FX
+    {
+      name: 'Crystal Lattice', cat: 'Textures & FX', desc: 'Folded triangle chimes with long ping-pong echoes.',
+      params: {
+        voices: 4, eventHz: 3.2, density: 0.65, randomness: 0.5, pitchMin: 66, pitchMax: 90, scale: 'lydian', root: 2,
+        glideMs: 0, attackMs: 1, pulseWidth: 15, releaseMs: 2200, blend: 1, detune: 7,
+        cutoffHz: 9000, filterQ: 1, envToFilter: 0.2, keyTrack: 0.4, noiseMix: 0, noiseBandMix: 0.04,
+        alienWarp: 0.3, warpMode: 'fold', lfoRate: 0.2, lfoDepth: 5, chaosRate: 0.3, chaosDepth: 0.3,
+        delayTime: 0.375, delayFb: 0.62, delayMix: 0.35, delayTone: 7000, delayWidth: 1,
+        spaceMix: 0.5, spaceSize: 6, spaceBright: 0.9, duckDepth: 0.4, panSpread: 0.9, masterDb: 3.5,
+      },
+    },
+    {
+      name: 'Mechanical Insects', cat: 'Textures & FX', desc: 'Tiny high clicks and chirps everywhere.',
+      params: {
+        voices: 4, eventHz: 7, density: 0.5, randomness: 0.9, pitchMin: 80, pitchMax: 104, scale: 'chromatic',
+        glideMs: 10, attackMs: 1, pulseWidth: 10, releaseMs: 60, blend: 0.5, detune: 20,
+        cutoffHz: 6000, filterQ: 6, envToFilter: 0.5, noiseMix: 0.1, noiseBandMix: 0.8, noiseBandHz: 6000, noiseBandQ: 25,
+        alienWarp: 0.5, warpMode: 'rectify', lfoRate: 18, lfoDepth: 600, lfoShape: 'sawtooth', chaosRate: 1.5, chaosDepth: 0.6,
+        delayTime: 0.06, delayFb: 0.5, delayMix: 0.3, delayTone: 9000, delayWidth: 1,
+        spaceMix: 0.25, spaceSize: 1.5, spaceBright: 0.7, duckDepth: 0.3, panSpread: 1, masterDb: 9.5,
+      },
+    },
+    {
+      name: 'Event Horizon', cat: 'Textures & FX', desc: 'Enormous glides falling in and out of range.',
+      params: {
+        voices: 2, eventHz: 0.25, randomness: 0.8, pitchMin: 30, pitchMax: 90, scale: 'chromatic', glideMs: 3000,
+        attackMs: 1500, pulseWidth: 2000, releaseMs: 4000, blend: 0.4, detune: 10, subLevel: 0.3,
+        cutoffHz: 1400, filterQ: 6, envToFilter: 0.4, noiseMix: 0.06, noiseBandMix: 0.2, noiseBandHz: 900, noiseBandQ: 5,
+        alienWarp: 0.3, lfoRate: 0.08, lfoDepth: 400, lfoShape: 'triangle', chaosRate: 0.2, chaosDepth: 0.8, chaosFilter: 0.6,
+        delayTime: 0.8, delayFb: 0.7, delayMix: 0.3, delayTone: 2000, delayWidth: 1,
+        spaceMix: 0.6, spaceSize: 9, spaceBright: 0.4, duckDepth: 0.3, panSpread: 0.7, masterDb: -1,
+      },
+    },
+    {
+      name: 'Rain on Hull', cat: 'Textures & FX', desc: 'Scattered metallic drops with a hiss of breath.',
+      params: {
+        voices: 4, eventHz: 5.5, density: 0.45, randomness: 1, pitchMin: 60, pitchMax: 96, scale: 'whole',
+        glideMs: 0, attackMs: 1, pulseWidth: 5, releaseMs: 150, blend: 0.3, detune: 6,
+        cutoffHz: 4000, filterQ: 3, envToFilter: 0.4, noiseMix: 0.3, noiseBandMix: 0.5, noiseBandHz: 3500, noiseBandQ: 6,
+        alienWarp: 0.1, lfoDepth: 0, chaosRate: 0.5, chaosDepth: 0.5,
+        delayTime: 0.15, delayFb: 0.3, delayMix: 0.2, delayTone: 6000, delayWidth: 1,
+        spaceMix: 0.5, spaceSize: 3, spaceBright: 0.6, duckDepth: 0.2, panSpread: 1, masterDb: 9,
+      },
+    },
   ];
+  const PRESET_CATS = ['Classic', 'Drones & Pads', 'Sequences & Machines', 'Textures & FX'];
+  FACTORY.sort((a, b) => PRESET_CATS.indexOf(a.cat) - PRESET_CATS.indexOf(b.cat)); // stable: keeps order within a category
 
   // ===========================================================================
   // Audio engine
@@ -980,10 +1140,12 @@
       sel.add(o);
       current = { kind: 'c', name: current.name || 'Untitled' };
     }
-    const gF = document.createElement('optgroup');
-    gF.label = 'Factory';
-    FACTORY.forEach(f => gF.appendChild(new Option(f.name, `f:${f.name}`)));
-    sel.add(gF);
+    for (const cat of PRESET_CATS) {
+      const g = document.createElement('optgroup');
+      g.label = cat;
+      FACTORY.filter(f => f.cat === cat).forEach(f => g.appendChild(new Option(f.name, `f:${f.name}`)));
+      sel.add(g);
+    }
     if (users.length) {
       const gU = document.createElement('optgroup');
       gU.label = 'User';

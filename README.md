@@ -21,7 +21,7 @@ global:  voice bus ─ warp (dry | drive → shaper → wet) ─ DC block ─┬
 
 ## Features
 
-- 11 factory presets. User presets are saved in the browser. Patches can be imported/exported as JSON, and **Share** copies a link that recreates the current patch.
+- 25 factory presets in four categories. User presets are saved in the browser. Patches can be imported/exported as JSON, and **Share** copies a link that recreates the current patch.
 - **Mutate** nudges every parameter a little; **Random** rolls a new patch.
 - 1–4 voices. Memory and Loop lock the random sequence into a repeating pattern. Density adds rests. Root key and 14 scales, including microtonal just-intonation overtone tuning.
 - Drone floor, sub oscillator, detune, filter key tracking, LFO shapes and LFO→filter, chaos→filter, three warp modes, delay tone and stereo width, reverb size and brightness, duck depth, pan spread.
